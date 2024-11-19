@@ -4,35 +4,28 @@ n_col = 9
 n_row = 11
 
 import pygame
-pygame.init()  # activating the libary
+from player import Player
+pygame.init()
 y=350
 x = 110
-screen = pygame.display.set_mode((1000, 700))  # make screen varibile and size
+screen = pygame.display.set_mode((1000, 700))
 Clock = pygame.time.Clock()
 col_font = pygame.font.SysFont("Arial", 30)
 
 FPS = 60
 
 
-class grid:
 
-    # init method or constructor
-    def __init__(self, rect):
-        self.rect = rect
+width = int(1000/9)
+height = int(700/11 * 0.4)
 
-    # Sample Method
+def grid():
 
-
-
-class players:
-
-    # init method or constructor
-    def __init__(self, rect):
-        x = cool
-
-
-
-
+    for r in range(0,n_row):
+        for c in range(0,n_col):
+            rect = pygame.rect.Rect(0 + width*c ,425 + height * r, width, height)
+            pygame.draw.rect(screen, (255, 255, 255), rect)
+            pygame.draw.rect(screen, (0, 0, 0), rect, 1)
 
 run = True
 
@@ -43,14 +36,9 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    width = int(1000/9)
-    height = int(700/11 * 0.4)
 
-    for r in range(0,n_row):
-        for c in range(0,n_col):
-            rect = pygame.rect.Rect(0 + width*c ,425 + height * r, width, height)
-            pygame.draw.rect(screen, (255, 255, 255), rect)
-            pygame.draw.rect(screen, (0, 0, 0), rect, 1)
+
+    grid()
 
 
 
