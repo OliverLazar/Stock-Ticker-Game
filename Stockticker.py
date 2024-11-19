@@ -44,12 +44,14 @@ while run:
             run = False
 
     width = int(1000/9)
-    height = int(700/11)
+    height = int(700/11 * 0.4)
 
     for r in range(0,n_row):
         for c in range(0,n_col):
-            rect = pygame.rect.Rect(0 + width*c ,400 + height * r, width, height)
+            rect = pygame.rect.Rect(0 + width*c ,425 + height * r, width, height)
             pygame.draw.rect(screen, (255, 255, 255), rect)
+            pygame.draw.rect(screen, (0, 0, 0), rect, 1)
+
 
 
 
