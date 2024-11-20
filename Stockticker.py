@@ -1,6 +1,6 @@
-columns = ["Player", "Gold", "Grain", "Industry", "Oil", "Silver", "Bonds", "Cash", "Networth"]
+columns = ["Player #","Gold", "Silver","Oil","Indust", "Bonds", "Grain", "Cash", "Networth"]
 players = ["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6","Player 7","Player 8","Player 9","Player 10"]
-color_cycle = []
+color_cycle = ["Green","Gold", "Silver","Grey","Red","Dark Green","Yellow","Green","Green"]
 n_col = 9
 n_row = 11
 
@@ -11,21 +11,20 @@ y=350
 x = 110
 screen = pygame.display.set_mode((1000, 700))
 Clock = pygame.time.Clock()
-col_font = pygame.font.SysFont("Arial", 30)
+col_font = pygame.font.SysFont("System", 25)
 
 FPS = 60
 
 rectangles = {}
 
 width = int(1000/9)
-height = int(700/10 * 0.4)
+height = int(700/11 * 0.4)
 
 def grid():
     for r in range(n_row):
         for c in range(n_col):
             rect = pygame.Rect(0 + width * c, 420 + height * r, width, height)
-            pygame.draw.rect(screen, (255, 255, 255), rect)
-            pygame.draw.rect(screen, (0, 0, 0), rect, 1)
+            pygame.draw.rect(screen, (0,0,0), rect)
 
             rectangles[(r, c)] = rect
 
@@ -49,8 +48,10 @@ while run:
 
 
     grid()
-    for row in range(0,10):
-        change_cell_text(row,0, players[row] ,"black")
+    for row in range(1,11):
+        change_cell_text(row,0, players[row-1] ,"green")
+    for col in range(0,9):
+        change_cell_text(0, col, columns[col], color_cycle[col])
 
 
 
