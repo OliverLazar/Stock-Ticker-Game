@@ -1,6 +1,6 @@
 columns = ["Player #","Gold", "Silver","Oil","Indust", "Bonds", "Grain", "Cash", "Networth"]
 players = ["Player 1","Player 2","Player 3","Player 4","Player 5","Player 6","Player 7","Player 8","Player 9","Player 10"]
-color_cycle = ["Green","Gold", "Silver","Grey","Red","Dark Green","Yellow","Green","Green"]
+color_cycle = ["Green","Gold", "Silver","Dark Grey","Red","Dark Green","Yellow","Green","Green"]
 n_col = 9
 n_row = 11
 
