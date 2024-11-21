@@ -11,17 +11,47 @@ col_font = pygame.font.SysFont("System", 25)
 run = True
 height = screen.get_height()
 width = screen.get_width()
-# white color
+
 color = (255, 255, 255)
 
-# light shade of the button
 color_light = (170, 170, 170)
 
-# dark shade of the button
 color_dark = (100, 100, 100)
 
+quit_pos_x = 430
+quit_pos_y = 550
+
+play_pos_x = 430
+play_pos_y = 450
+
+s_pos_x = 430
+s_pos_y = 500
+
+bg = pygame.image.load("C:\\Users\\OliverLazar\\Downloads\\images.jpg")
+bg = pygame.transform.scale(bg, [1000,700])
 smallfont = pygame.font.SysFont('Corbel',35)
-text = smallfont.render('quit' , True , color)
+
+
+def button_creation(x,y,t):
+    text = smallfont.render(t, True, color)
+    if x <= mouse[0] <= x + 140 and y <= mouse[1] <= y + 40:
+            pygame.draw.rect(screen, color_light, [x ,y , 140, 40])
+    else:
+            pygame.draw.rect(screen, color_dark, [x, y, 140, 40])
+
+    if t == "Settings":
+        screen.blit(text, (x + 15, y + 3))
+    else:
+        screen.blit(text, (x + 40, y + 3))
+
+def button_check(x, y, state):
+                if x <= mouse[0] <= x + 140 and y <= mouse[1] <= y + 40 and state == "Quit":
+                    pygame.quit()
+                if x <= mouse[0] <= x + 140 and y <= mouse[1] <= y + 40 and state == "Play":
+                    game(5, False)
+
+
+
 
 while run:
 
@@ -31,26 +61,24 @@ while run:
             run = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                game(10, False)
+                game(5, False)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
+            button_check(quit_pos_x, quit_pos_y, "Quit")
+            button_check(play_pos_x, play_pos_y, "Play")
+            button_check(s_pos_x, s_pos_y, "Settings")
 
-                if width / 2 <= mouse[0] <= width / 2 + 140 and height / 2 <= mouse[1] <= height / 2 + 40:
-                    pygame.quit()
 
 
-    screen.fill((60, 25, 60))
+    screen.blit(bg, (0, 0))
 
 
     mouse = pygame.mouse.get_pos()
+    print(mouse)
 
-    if width / 2 <= mouse[0] <= width / 2 + 140 and height / 2 <= mouse[1] <= height / 2 + 40:
-            pygame.draw.rect(screen, color_light, [width / 2, height / 2, 140, 40])
-    else:
-            pygame.draw.rect(screen, color_dark, [width / 2, height / 2, 140, 40])
-
-
-    screen.blit(text, (width / 2 + 50, height / 2))
+    button_creation(quit_pos_x,quit_pos_y,"Quit")
+    button_creation(play_pos_x, play_pos_y,"Play")
+    button_creation(s_pos_x, s_pos_y, "Settings")
 
 
 

@@ -19,7 +19,7 @@ class game():
         pygame.display.set_caption("Stock Ticker Game")
         col_font = pygame.font.SysFont("System", 25)
 
-        for player in range(1,playercount):
+        for player in range(1,playercount+1):
             players.append(Player(5000, 5000, player))
             print(players)
 
@@ -60,7 +60,7 @@ class game():
                 pygame.draw.rect(screen, color, rect, 4)
 
         def net_worth_update():
-            for p in players[10:20]:
+            for p in players[playercount:]:
                 r = p.row
                 nw = p.net_worth
                 c = p.cash
@@ -69,7 +69,7 @@ class game():
 
 
         def update_board():
-            for p in players[10:20]:
+            for p in players[playercount:]:
                 r = p.row
                 stock = p.stocks
                 c = 1
@@ -100,10 +100,10 @@ class game():
                     if event.key == pygame.K_RIGHT and highlight_col < 6:
                         highlight_col += 1
                     if event.key == pygame.K_EQUALS:
-                        p = players[highlight_row + (len(players) - row)]
+                        p = players[highlight_row + playercount -1]
                         p.stocks[columns[highlight_col]] += 500
                     if event.key == pygame.K_MINUS:
-                        p = players[highlight_row + (len(players) - row)]
+                        p = players[highlight_row + playercount -1]
                         if p.stocks[columns[highlight_col]] == 0 and futures_trading == False:
                             pass
                         else:
@@ -117,7 +117,7 @@ class game():
             grid()
 
             for row in range(1,n_row):
-                change_cell_text(row,0, players[row-1] ,"green")
+                change_cell_text(row,0, players[row - 1] ,"green")
             for col in range(0,9):
                 change_cell_text(0, col, columns[col], color_cycle[col])
 
