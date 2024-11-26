@@ -1,89 +1,91 @@
 import pygame
+import pygame_menu
 from Stockticker import game
-pygame.init()
-y=350
-x = 110
-FPS = 60
-screen = pygame.display.set_mode((1000, 700))
-Clock = pygame.time.Clock()
-pygame.display.set_caption("Stock Ticker Game")
-col_font = pygame.font.SysFont("System", 25)
-run = True
-height = screen.get_height()
-width = screen.get_width()
 
-color = (255, 255, 255)
+players = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6", "Player 7", "Player 8",
+           "Player 9", "Player 10"]
+fps = 60
+text_box = []
+window_size = (1000, 700)
+screen = pygame.display.set_mode(window_size)
+clock = pygame.time.Clock()
 
-color_light = (170, 170, 170)
+selectors = []
 
-color_dark = (100, 100, 100)
+def check_name_test(value: str):
+    print(f'Name: {value}')
 
-quit_pos_x = 430
-quit_pos_y = 550
+def main_background():
+    screen.fill((0, 0, 0))
 
-play_pos_x = 430
-play_pos_y = 450
+def check_click():
+    for i in range(0, 10):
+        for n in text_box[i].get_value():
+            players[i] = text_box[i].get_value()
+    game(int(selectors[0].get_value()[0][0]), (selectors[1].get_value()[0][0] == "T"), players)
 
-s_pos_x = 430
-s_pos_y = 500
+def main(test: bool = False) -> None:
+    pygame.init()
 
-bg = pygame.image.load("C:\\Users\\OliverLazar\\Downloads\\images.jpg")
-bg = pygame.transform.scale(bg, [1000,700])
-smallfont = pygame.font.SysFont('Corbel',35)
+    minimal_theme = pygame_menu.Theme(
+        background_color=(0, 0, 0, 0),
+        title=False,
+        widget_font=pygame_menu.font.FONT_NEVIS,
+        widget_font_size=25,
+        widget_font_color=(255, 255, 255)
+    )
+
+    settings_menu = pygame_menu.Menu(
+        height=window_size[1] * 0.85,
+        theme=minimal_theme,
+        title='',
+        width=window_size[0] * 0.9
+    )
+
+    for player in players:
+        text_box.append(settings_menu.add.text_input(
+            player + ': ',
+            default=player,
+            onreturn=check_name_test,
+            textinput_id=player, maxchar = 12
+        ))
+
+    items = [(str(i), str(i)) for i in range(1, 11)]
+    selectors.append(settings_menu.add.selector(
+        'Player Count:\t', items, selector_id="Player Count", default=9))
+    selectors.append(settings_menu.add.selector(
+        'Futures Trading:\t', ["False","True"], selector_id="Futures", default=1))
+    settings_menu.add.button('Restore original values', settings_menu.reset_value)
+    settings_menu.add.button('')
+    settings_menu.add.button('Return to main menu', pygame_menu.events.BACK)
+
+    # Create menus: Main menu
+    main_menu = pygame_menu.Menu(
+        height=window_size[1] * 0.7,
+        onclose=pygame_menu.events.EXIT,
+        theme=minimal_theme,
+        title='',
+        width=window_size[0] * 0.8
+    )
+
+    main_menu.add.button('Play', check_click)
+    main_menu.add.button('Settings', settings_menu)
+    main_menu.add.button('Quit', pygame_menu.events.EXIT)
 
 
-def button_creation(x,y,t):
-    text = smallfont.render(t, True, color)
-    if x <= mouse[0] <= x + 140 and y <= mouse[1] <= y + 40:
-            pygame.draw.rect(screen, color_light, [x ,y , 140, 40])
-    else:
-            pygame.draw.rect(screen, color_dark, [x, y, 140, 40])
+    return main_menu
 
-    if t == "Settings":
-        screen.blit(text, (x + 15, y + 3))
-    else:
-        screen.blit(text, (x + 40, y + 3))
+    # Main loop
 
-def button_check(x, y, state):
-                if x <= mouse[0] <= x + 140 and y <= mouse[1] <= y + 40 and state == "Quit":
-                    pygame.quit()
-                if x <= mouse[0] <= x + 140 and y <= mouse[1] <= y + 40 and state == "Play":
-                    game(5, False)
-
-
-
-
-while run:
+while True:
 
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
             run = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                game(5, False)
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            button_check(quit_pos_x, quit_pos_y, "Quit")
-            button_check(play_pos_x, play_pos_y, "Play")
-            button_check(s_pos_x, s_pos_y, "Settings")
 
 
-
-    screen.blit(bg, (0, 0))
-
-
-    mouse = pygame.mouse.get_pos()
-    print(mouse)
-
-    button_creation(quit_pos_x,quit_pos_y,"Quit")
-    button_creation(play_pos_x, play_pos_y,"Play")
-    button_creation(s_pos_x, s_pos_y, "Settings")
-
-
-
-
-    Clock.tick(FPS)
+    clock.tick(fps)
+    main_background()
+    main().mainloop(screen, main_background, fps_limit=fps)
     pygame.display.update()
-    pygame.display.flip()
-pygame.quit()

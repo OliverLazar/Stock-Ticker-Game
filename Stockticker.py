@@ -1,21 +1,28 @@
 class game():
-    def __init__(self, playercount, futures_trading):
+    def __init__(self, playercount, futures_trading, players):
         self.playercount = playercount
         self.futures_trading = futures_trading
+        self.players = players
         print(playercount)
         columns = ["Player #","Gold", "Silver","Oil","Indust", "Bonds", "Grain", "Cash", "Networth"]
-        players = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6", "Player 7", "Player 8","Player 9", "Player 10"][:playercount]
+        players = players[:playercount]
         color_cycle = ["Green","Gold", "Silver","Dark Grey","Red","Dark Green","Yellow","Green","Green"]
         n_col = 9
         n_row = playercount + 1
 
+        prices = {"Gold":1,
+                    "Silver":1,
+                    "Oil":1,
+                    "Indust":1,
+                    "Bonds":1,
+                    "Grain":1}
+
         import pygame
         from player import Player
         pygame.init()
-        y=350
-        x = 110
+
         screen = pygame.display.set_mode((1000, 700))
-        Clock = pygame.time.Clock()
+        clock = pygame.time.Clock()
         pygame.display.set_caption("Stock Ticker Game")
         col_font = pygame.font.SysFont("System", 25)
 
@@ -32,11 +39,6 @@ class game():
 
         highlight_row = 1
         highlight_col = 1
-
-
-
-
-
 
         def grid():
             for r in range(n_row):
@@ -101,18 +103,16 @@ class game():
                         highlight_col += 1
                     if event.key == pygame.K_EQUALS:
                         p = players[highlight_row + playercount -1]
-                        p.stocks[columns[highlight_col]] += 500
+                        if p.cash >= 500*prices[columns[highlight_col]]:
+                            p.stocks[columns[highlight_col]] += 500
+                            p.cash -= 500*prices[columns[highlight_col]]
                     if event.key == pygame.K_MINUS:
                         p = players[highlight_row + playercount -1]
                         if p.stocks[columns[highlight_col]] == 0 and futures_trading == False:
                             pass
                         else:
                             p.stocks[columns[highlight_col]] -= 500
-
-
-
-
-
+                            p.cash += 500 * prices[columns[highlight_col]]
 
             grid()
 
@@ -121,7 +121,8 @@ class game():
             for col in range(0,9):
                 change_cell_text(0, col, columns[col], color_cycle[col])
 
-
+            rect = pygame.Rect(0, 360, 1000, height * 2, width=2)
+            pygame.draw.rect(screen, (255, 0, 0), rect)
 
             draw_highlight(highlight_row, highlight_col, color_cycle[highlight_col])
 
@@ -129,7 +130,7 @@ class game():
             update_board()
 
 
-            Clock.tick(FPS)
+            clock.tick(FPS)
             pygame.display.update()
             pygame.display.flip()
         pygame.quit()
