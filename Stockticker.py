@@ -1,34 +1,56 @@
+current_x_interval = 0
+inverse = False
 class game():
     def __init__(self, playercount, futures_trading, players):
         self.playercount = playercount
         self.futures_trading = futures_trading
         self.players = players
-        print(playercount)
+
         columns = ["Player #","Gold", "Silver","Oil","Indust", "Bonds", "Grain", "Cash", "Networth"]
         players = players[:playercount]
-        color_cycle = ["Green","Gold", "Silver","Dark Grey","Red","Dark Green","Yellow","Green","Green"]
+        color_cycle = ["Green",(170,170,0), (170,170,255),(170,170,170),(170,0,0),(0,170,0),(180,160,110),"Green","Green"]
         n_col = 9
         n_row = playercount + 1
-        on_crawler = {"":0}
+        on_crawler = {}
+
         x = 1000
 
 
-        prices = {"Gold":1,
-                    "Silver":1,
-                    "Oil":1,
-                    "Indust":1,
-                    "Bonds":1,
-                    "Grain":1}
 
-        stock_colors = {"Gold": "Gold",
-                  "Silver": "Silver",
-                  "Oil": "Dark Grey",
-                  "Indust": "Red",
-                  "Bonds": "Dark Green",
-                  "Grain": "Yellow"}
+
+        prices = {"Gold":100,
+                    "Silver":100,
+                    "Oil":100,
+                    "Indust":100,
+                    "Bonds":100,
+                    "Grain":100}
+
+        stock_colors = {"Gold": (170,170,0),
+                  "Silver": (170,170,255),
+                  "Oil": (170,170,170),
+                  "Indust": (170,0,0),
+                  "Bonds": (0,170,0),
+                  "Grain": (180,160,110)}
+
+        points = {"Gold": [(0,180),(0,180)],
+                  "Silver": [(0,180),(0,180)],
+                  "Oil": [(0,180),(0,180)],
+                  "Indust": [(0,180),(0,180)],
+                  "Bonds": [(0,180),(0,180)],
+                  "Grain": [(0,180),(0,180)]}
+
+        c_points = {"Gold": [],
+                  "Silver": [],
+                  "Oil": [],
+                  "Indust": [],
+                  "Bonds": [],
+                  "Grain": []}
 
         dice2 = ["Up", "Down", "Div","Up", "Down", "Div"]
         dice3 = [5,10,20,5,10,20]
+
+        crawl_finished = True
+
 
 
 
@@ -36,6 +58,7 @@ class game():
         from player import Player
         from random import randint
         import time
+        from time import gmtime, strftime
         pygame.init()
 
 
@@ -47,7 +70,7 @@ class game():
 
         for player in range(1,playercount+1):
             players.append(Player(5000, 5000, player))
-            print(players)
+
 
         FPS = 60
 
@@ -60,6 +83,9 @@ class game():
 
         highlight_row = 1
         highlight_col = 1
+
+        market_open = False
+
 
 
 
@@ -88,7 +114,7 @@ class game():
             for p in players[playercount:]:
                 r = p.row
                 nw = p.net_worth
-                c = p.cash
+                c = round(p.cash)
                 change_cell_text(r, 8, str(nw), "Green")
                 change_cell_text(r, 7, str(c), "Green")
 
@@ -111,36 +137,93 @@ class game():
             occurance = dice2[d6_2]
             interval = dice3[d6_3]
             if occurance == "Up":
-                prices[stock] += round(interval/100,2)
+                prices[stock] += round(interval,2)
 
             if occurance == "Down":
-                prices[stock] -= round(interval/100,2)
+                prices[stock] -= round(interval,2)
 
             if occurance == "Div":
                 if prices[stock] >= 1:
                     for p in players[playercount:]:
-                        p.cash += (p.stocks[stock] * round(interval/100,2))
+                        p.cash += (p.stocks[stock] * round(interval,2))
             return stock,occurance,interval
 
 
         def crawl():
-                if on_crawler[list(on_crawler.keys())[0]] in [750,500,250,0]:
-                    if "" in list(on_crawler.keys()):
-                        del on_crawler[""]
+                global current_x_interval
+                if on_crawler[list(on_crawler.keys())[0]] in [750,500,250,0,"placeholder"]:
                     stock, occurance, interval = dice_roll()
                     text = f"{stock} {occurance} {interval}"
                     text_surface = crawl_font.render(text, False, stock_colors[stock])
                     on_crawler.update({text_surface:1000})
+                    update_points()
+                    if occurance == "Div" and prices[stock] >= 1:
+                        c_points[stock].append((current_x_interval-2.5,prices[stock]*-1.8+360))
+
 
 
         def crawl_move():
+            if "placeholder" in on_crawler:
+                del on_crawler['placeholder']
             for text in (list(on_crawler.keys())):
                 screen.blit(text, (on_crawler[text], 370))
                 on_crawler[text] -= 2
             if on_crawler[list(on_crawler.keys())[0]] <= -200:
                 del on_crawler[list(on_crawler.keys())[0]]
+            if len(on_crawler) == 0:
+                return True
+
+        def draw_x_axis():
+            xi = 0
+            xf = 5
+            for _ in range(0,100):
+                pygame.draw.line(screen, "White",(xi-5,180),(xf-5,180),1)
+                xi += 10
+                xf += 10
 
 
+        def update_points():
+            global current_x_interval
+            for v in points:
+                points[v].append((current_x_interval,prices[v]*-1.8+360))
+            current_x_interval += 5
+
+        def draw_lines():
+            draw_order = list(points.keys())
+            for i in range(len(points["Gold"])-1):
+                for v in draw_order:
+                    split_1, split_2 = points[v][i], points[v][i+1]
+                    pygame.draw.line(screen, stock_colors[v], split_1, split_2, 1)
+                draw_order.reverse()
+
+
+
+
+
+        def draw_circle():
+            for v in c_points:
+                for n in c_points[v]:
+                    pygame.draw.circle(screen, stock_colors[v], n, 5, 1)
+
+        def market_closed_blit():
+            on_crawler = {}
+            text_surface = crawl_font.render("Market Open", False, "Green")
+            on_crawler[text_surface] = 1000
+            screen.blit(text_surface, (on_crawler[text_surface], 370))
+            text_surface = crawl_font.render("Cost:", False, "Green")
+            screen.blit(text_surface, (20, 370))
+            on_crawler[text_surface] = 20
+            for col in range(1, 7):
+                stock = columns[col]
+                text_surface = crawl_font.render(f"{prices[stock]}", False, stock_colors[stock])
+                screen.blit(text_surface, ((width * (col + 1) - 80), 370))
+                on_crawler[text_surface] = (width * (col + 1) - 80)
+            time = strftime("%H:%M:%S", gmtime())
+            text_surface = crawl_font.render(f"{time}", False, "Green")
+            screen.blit(text_surface, (820, 370))
+            on_crawler[text_surface] = 820
+            on_crawler["placeholder"] = "placeholder"
+            return on_crawler
 
 
 
@@ -168,16 +251,24 @@ class game():
                         highlight_col += 1
                     if event.key == pygame.K_EQUALS:
                         p = players[highlight_row + playercount -1]
-                        if p.cash >= 500*prices[columns[highlight_col]]:
+                        if p.cash >= 500*prices[columns[highlight_col]]/100:
                             p.stocks[columns[highlight_col]] += 500
-                            p.cash -= 500*prices[columns[highlight_col]]
+                            p.cash -= 500*prices[columns[highlight_col]]/100
                     if event.key == pygame.K_MINUS:
                         p = players[highlight_row + playercount -1]
                         if p.stocks[columns[highlight_col]] == 0 and futures_trading == False:
                             pass
                         else:
                             p.stocks[columns[highlight_col]] -= 500
-                            p.cash += 500 * prices[columns[highlight_col]]
+                            p.cash += 500 * prices[columns[highlight_col]]/100
+                    if event.key == pygame.K_SPACE:
+                        if market_open == False:
+                            market_open = True
+                        else:
+                            market_open = False
+                            crawl_finished = False
+                            text_surface = crawl_font.render("Market Closed", False, "Green")
+                            on_crawler[text_surface] = on_crawler[list(on_crawler.keys())[-1]] + 250
 
 
 
@@ -188,8 +279,7 @@ class game():
             for col in range(0,9):
                 change_cell_text(0, col, columns[col], color_cycle[col])
 
-            crawl()
-            crawl_move()
+
 
             pygame.draw.rect(screen, (64, 64, 192), crawler, 2)
 
@@ -197,6 +287,24 @@ class game():
 
             net_worth_update()
             update_board()
+
+            if market_open == False:
+
+                if crawl_finished == True:
+                    on_crawler = market_closed_blit()
+                else:
+                    crawl_finished = crawl_move()
+
+
+
+
+            if market_open == True:
+                crawl()
+                crawl_move()
+                draw_x_axis()
+                draw_lines()
+                draw_circle()
+
 
 
             clock.tick(FPS)
