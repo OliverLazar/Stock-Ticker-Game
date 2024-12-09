@@ -145,7 +145,16 @@ class game():
             if occurance == "Div":
                 if prices[stock] >= 1:
                     for p in players[playercount:]:
-                        p.cash += (p.stocks[stock] * round(interval,2))
+                        p.cash += (p.stocks[stock] * round(interval/100,2))
+
+            if prices[stock] >= 200:
+                prices[stock] = 100
+                for p in players[playercount:]:
+                    p.stocks[stock] = p.stocks[stock] * 2
+            if prices[stock] <= 0:
+                prices[stock] = 100
+                for p in players[playercount:]:
+                    p.stocks[stock] = p.stocks[stock] * 0
             return stock,occurance,interval
 
 
@@ -185,8 +194,21 @@ class game():
         def update_points():
             global current_x_interval
             for v in points:
+                if current_x_interval == 1000:
+                        lst =  list(points[v][-2])
+                        lst[0] = 0
+                        points[v][-2] = tuple(lst)
+                        lst = list(points[v][-1])
+                        lst[0] = 5
+                        points[v][-1]= tuple(lst)
+                        points[v] = points[v][-2:]
+                        current_x_interval = 10
+                        print(points)
+                        c_points[v] = c_points[v][-2:]
+                        print(c_points)
                 points[v].append((current_x_interval,prices[v]*-1.8+360))
             current_x_interval += 5
+
 
         def draw_lines():
             draw_order = list(points.keys())
