@@ -52,7 +52,7 @@ def main(test: bool = False) -> None:
 
     items = [(str(i), str(i)) for i in range(1, 11)]
     selectors.append(settings_menu.add.selector(
-        'Player Count:\t', items, selector_id="Player Count", default=9))
+        'Player Count:\t', items, selector_id="Player Count", default=7))
     selectors.append(settings_menu.add.selector(
         'Futures Trading:\t', ["False","True"], selector_id="Futures", default=1))
     settings_menu.add.button('Restore original values', settings_menu.reset_value)
