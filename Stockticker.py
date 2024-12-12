@@ -116,28 +116,31 @@ class game():
                     for row in game_state:
                             if row[0] == "Player Count":
                                 self.playercount = int(row[1])
-                                print(int(row[1]))
-                            elif row[0] in prices and len(row) > 2:
+                            elif row[0] in prices and len(row) >= 2:
                                 prices[row[0]] = int(row[1])
                             elif row[0] == "Futures Trading State":
                                 self.futures_trading = (row[1] == "True")
                     players = []
                     for n in range(1,self.playercount+1):
-                        print(int(float(game_state[n][1])), int(game_state[n][2]), int(game_state[n][3]), str(game_state[n][0]))
+
                         p = Player(int(float(game_state[n][1])), int(game_state[n][2]), int(game_state[n][3]), str(game_state[n][0]))
                         p.stocks = eval(game_state[n][4])
                         players.append(p)
                     resume_game = False
                     screen.fill("Black")
                     n_row = self.playercount + 1
-
                 except FileNotFoundError:
                     print("Save file not found")
+                except ValueError:
+                    print("Save file is wrong")
+                    pygame.quit()
+                except IndexError:
+                    print("Save file is wrong")
+                    pygame.quit()
             else:
                 print("Load failed")
 
-        print(self.playercount)
-        print(players)
+
         def grid():
             for r in range(n_row):
                 for c in range(n_col):
@@ -196,7 +199,6 @@ class game():
             if occurance == "Div":
                 if prices[stock] >= 100:
                     for p in players:
-                        if p.stocks > 0:
                             p.cash += (p.stocks[stock] * round(interval/100,2))
 
             if prices[stock] >= 200:
@@ -228,7 +230,7 @@ class game():
                 del on_crawler['placeholder']
             for text in (list(on_crawler.keys())):
                 screen.blit(text, (on_crawler[text], 370))
-                on_crawler[text] -= 12.5
+                on_crawler[text] -= 25
             if on_crawler[list(on_crawler.keys())[0]] <= -200:
                 del on_crawler[list(on_crawler.keys())[0]]
             if len(on_crawler) == 0:
@@ -255,12 +257,12 @@ class game():
                         lst = list(points[v][-1])
                         lst[0] = 5
                         points[v][-1]= tuple(lst)
-                        print(points)
+
                         points[v] = points[v][-2:]
 
-                        print(points)
+
                         c_points[v] = []
-                        print(c_points)
+
                         iteration += 1
                 if iteration == 6:
                     current_x_interval = 10
@@ -297,7 +299,7 @@ class game():
                 text_surface = crawl_font.render(f"{prices[stock]}", False, stock_colors[stock])
                 screen.blit(text_surface, ((width * (col + 1) - 80), 370))
                 on_crawler[text_surface] = (width * (col + 1) - 80)
-            time = strftime("%H:%M:%S", gmtime())
+            time = strftime("%H:%M:%S")
             text_surface = crawl_font.render(f"{time}", False, "Green")
             screen.blit(text_surface, (820, 370))
             on_crawler[text_surface] = 820
