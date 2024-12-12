@@ -12,17 +12,22 @@ clock = pygame.time.Clock()
 
 selectors = []
 
-def check_name_test(value: str):
-    print(f'Name: {value}')
+
 
 def main_background():
     screen.fill((0, 0, 0))
 
-def check_click():
+def play():
     for i in range(0, 10):
         for n in text_box[i].get_value():
             players[i] = text_box[i].get_value()
-    game(int(selectors[0].get_value()[0][0]), (selectors[1].get_value()[0][0] == "T"), players)
+    game(int(selectors[0].get_value()[0][0]), (selectors[1].get_value()[0][0] == "T"), players, False)
+
+def from_save():
+    for i in range(0, 10):
+        for n in text_box[i].get_value():
+            players[i] = text_box[i].get_value()
+    game(int(selectors[0].get_value()[0][0]), (selectors[1].get_value()[0][0] == "T"), players, True)
 
 def main(test: bool = False) -> None:
     pygame.init()
@@ -46,8 +51,8 @@ def main(test: bool = False) -> None:
         text_box.append(settings_menu.add.text_input(
             player + ': ',
             default=player,
-            onreturn=check_name_test,
-            textinput_id=player, maxchar = 12
+
+            textinput_id=player, maxchar = 11
         ))
 
     items = [(str(i), str(i)) for i in range(1, 11)]
@@ -68,7 +73,8 @@ def main(test: bool = False) -> None:
         width=window_size[0] * 0.8
     )
 
-    main_menu.add.button('Play', check_click)
+    main_menu.add.button('Play', play)
+    main_menu.add.button('Load from Save', from_save)
     main_menu.add.button('Settings', settings_menu)
     main_menu.add.button('Quit', pygame_menu.events.EXIT)
 

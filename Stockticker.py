@@ -1,18 +1,29 @@
 current_x_interval = 0
 inverse = False
 class game():
-    def __init__(self, playercount, futures_trading, players):
+    def __init__(self, playercount, futures_trading, players, resume_game):
         self.playercount = playercount
         self.futures_trading = futures_trading
         self.players = players
+        self.resume_game = True
         columns = ["Player #","Gold", "Silver","Oil","Indust", "Bonds", "Grain", "Cash", "Networth"]
-        players = players[:playercount]
+        players = players[:self.playercount]
         color_cycle = ["Green",(170,170,0), (170,170,255),(170,170,170),(170,0,0),(0,170,0),(180,160,110),"Green","Green"]
         n_col = 9
-        n_row = playercount + 1
+        n_row = self.playercount + 1
         on_crawler = {}
         key_recording = False
         x = 1000
+        instructions = [
+            "Welcome to Stock Ticker Game!",
+            "Instructions:",
+            "- Use arrow keys to navigate.",
+            "- Press SPACE to toggle the market state.",
+            "- Use '=' to buy 500 shares and '-' to sell 500 shares.",
+            "- Use '[' to sell all shares and ']' to buy max shares.",
+            "- Press ENTER to add a player and TAB to confirm their name.",
+            "- Press s to save the game"
+        ]
 
 
 
@@ -56,9 +67,11 @@ class game():
         import pygame
         from player import Player
         from random import randint
-        import time
         from time import gmtime, strftime
         from operator import attrgetter
+        import tkinter as tk
+        from tkinter import filedialog
+        import csv
         pygame.init()
 
 
@@ -68,10 +81,10 @@ class game():
         col_font = pygame.font.SysFont("System", 25)
         crawl_font = pygame.font.SysFont("System", 40)
 
-        for pos in range(0,playercount):
+        for pos in range(0,self.playercount):
             players.append(Player(5000, 5000,pos+1, name=players[pos]))
 
-        players = players[playercount:]
+        players = players[self.playercount:]
 
         FPS = 60
 
@@ -87,6 +100,44 @@ class game():
 
         market_open = False
 
+        if resume_game == True:
+
+            root = tk.Tk()
+            root.withdraw()
+            file_path = filedialog.askopenfilename(
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Load Game State"
+            )
+            if file_path:
+                try:
+                    with open(file_path, "r") as file:
+                        reader = csv.reader(file)
+                        game_state = list(reader)
+                    for row in game_state:
+                            if row[0] == "Player Count":
+                                self.playercount = int(row[1])
+                                print(int(row[1]))
+                            elif row[0] in prices and len(row) > 2:
+                                prices[row[0]] = int(row[1])
+                            elif row[0] == "Futures Trading State":
+                                self.futures_trading = (row[1] == "True")
+                    players = []
+                    for n in range(1,self.playercount+1):
+                        print(int(float(game_state[n][1])), int(game_state[n][2]), int(game_state[n][3]), str(game_state[n][0]))
+                        p = Player(int(float(game_state[n][1])), int(game_state[n][2]), int(game_state[n][3]), str(game_state[n][0]))
+                        p.stocks = eval(game_state[n][4])
+                        players.append(p)
+                    resume_game = False
+                    screen.fill("Black")
+                    n_row = self.playercount + 1
+
+                except FileNotFoundError:
+                    print("Save file not found")
+            else:
+                print("Load failed")
+
+        print(self.playercount)
+        print(players)
         def grid():
             for r in range(n_row):
                 for c in range(n_col):
@@ -143,9 +194,10 @@ class game():
                 prices[stock] -= round(interval,2)
 
             if occurance == "Div":
-                if prices[stock] >= 1:
+                if prices[stock] >= 100:
                     for p in players:
-                        p.cash += (p.stocks[stock] * round(interval/100,2))
+                        if p.stocks > 0:
+                            p.cash += (p.stocks[stock] * round(interval/100,2))
 
             if prices[stock] >= 200:
                 prices[stock] = 100
@@ -176,7 +228,7 @@ class game():
                 del on_crawler['placeholder']
             for text in (list(on_crawler.keys())):
                 screen.blit(text, (on_crawler[text], 370))
-                on_crawler[text] -= 2
+                on_crawler[text] -= 12.5
             if on_crawler[list(on_crawler.keys())[0]] <= -200:
                 del on_crawler[list(on_crawler.keys())[0]]
             if len(on_crawler) == 0:
@@ -252,8 +304,51 @@ class game():
             on_crawler["placeholder"] = "placeholder"
             return on_crawler
 
-        def typing():
-            pass
+        def display_instructions():
+            instruction_font = pygame.font.SysFont("System", 40)
+            y_offset = 10
+
+            for line in instructions:
+                words = line.split(" ")
+                x_offset = 10
+                for word in words:
+                    if word in ["'='", "'-'", "'['", "']'", "SPACE", "ENTER", "TAB", "s"]:
+                        text_surface = instruction_font.render(word, False, "Yellow")
+                    else:
+                        text_surface = instruction_font.render(word, False, "Green")
+                    text_rect = text_surface.get_rect(topleft=(x_offset, y_offset))
+                    screen.blit(text_surface, text_rect.topleft)
+                    x_offset += text_rect.width + 5
+                y_offset += 40
+        def save():
+            game_state = []
+            game_state.append(["Player Count", self.playercount])
+
+            for p in players:
+                game_state.append([p.name, p.cash, p.net_worth, p.row, p.stocks])
+
+            for stock, price in prices.items():
+                game_state.append([stock, price])
+
+            game_state.append(["Futures Trading State", futures_trading])
+            root = tk.Tk()
+            root.withdraw()
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save Game"
+            )
+            if file_path:
+                with open(file_path, "w", newline="") as file:
+                    writer = csv.writer(file)
+                    writer.writerows(game_state)
+                print(f"Game state saved to {file_path}")
+            else:
+                print("Save operation canceled.")
+
+
+
+
 
         run = True
 
@@ -275,12 +370,12 @@ class game():
                         highlight_col -= 1
                     if event.key == pygame.K_RIGHT and highlight_col < 6:
                         highlight_col += 1
-                    if event.key == pygame.K_EQUALS and key_recording == False:
+                    if event.key == pygame.K_EQUALS and key_recording == False and market_open == False:
                         p = players[highlight_row -1]
                         if p.cash >= 500*prices[columns[highlight_col]]/100:
                             p.stocks[columns[highlight_col]] += 500
                             p.cash -= 500*prices[columns[highlight_col]]/100
-                    if event.key == pygame.K_MINUS and key_recording == False:
+                    if event.key == pygame.K_MINUS and key_recording == False and market_open == False:
                         p = players[highlight_row -1]
                         if p.stocks[columns[highlight_col]] == 0 and futures_trading == False:
                             pass
@@ -303,13 +398,13 @@ class game():
                                     total_stock_value += (p.stocks[stock] * prices[stock]/100)
                                 p.net_worth = round(p.cash + total_stock_value)
                             players.sort(key=attrgetter("net_worth"), reverse=True)
-                    if event.key == pygame.K_RETURN:
-                        if playercount != 10 and key_recording != True:
-                            playercount += 1
-                            players.append(Player(5000, 5000, playercount, ""))
-                            n_row = playercount + 1
+                    if event.key == pygame.K_RETURN and market_open == False:
+                        if self.playercount != 10 and key_recording != True:
+                            self.playercount += 1
+                            players.append(Player(5000, 5000, self.playercount, ""))
+                            n_row = self.playercount + 1
                             highlight_col = 0
-                            highlight_row = playercount
+                            highlight_row = self.playercount
                             key_recording = True
                     if key_recording:
 
@@ -321,12 +416,14 @@ class game():
                         elif event.key == pygame.K_BACKSPACE:
                             players[-1].name = players[-1].name[:-1]
                         else:
-                            if event.key != pygame.K_RETURN:
+                            if event.key != pygame.K_RETURN and len(players[-1].name) <= 11:
                                 players[-1].name += event.unicode
 
                     if event.key == pygame.K_LEFTBRACKET:
                         p = players[highlight_row - 1]
                         if p.stocks[columns[highlight_col]] == 0 and futures_trading == False:
+                            pass
+                        elif p.stocks[columns[highlight_col]] <= 0:
                             pass
                         else:
                             p.cash += p.stocks[columns[highlight_col]] * prices[columns[highlight_col]] / 100
@@ -334,9 +431,11 @@ class game():
                     if event.key == pygame.K_RIGHTBRACKET:
                         p = players[highlight_row - 1]
                         max_buy = int(p.cash/((prices[columns[highlight_col]])/100)/500)
-                        print(max_buy)
                         p.cash -= (max_buy*500) * (prices[columns[highlight_col]] / 100)
                         p.stocks[columns[highlight_col]] += (max_buy*500)
+                    if event.key == pygame.K_s and key_recording == False:
+                        save()
+
 
 
 
@@ -364,6 +463,7 @@ class game():
                     on_crawler = market_closed_blit()
                 else:
                     crawl_finished = crawl_move()
+                display_instructions()
 
 
 
