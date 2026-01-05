@@ -174,14 +174,6 @@ When enabled in settings:
 - Risk:  Unlimited losses if price rises
 - Reward: Profit when prices fall
 - Advanced feature for experienced players
-
-## 💡 Tips & Strategy
-
-- **Diversify**:  Don't put all your money in one stock
-- **Watch for patterns**:  Some stocks may trend up or down
-- **Time dividends**: Buy before dividend payments for quick gains
-- **Fear the crash**: Stocks near $0 are extremely risky
-- **Anticipate splits**: Stocks near $200 will double your shares
 - **Manage risk**: Keep some cash on hand for opportunities
 
 ## 📄 License
